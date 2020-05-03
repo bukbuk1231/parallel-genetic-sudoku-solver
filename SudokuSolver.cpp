@@ -10,6 +10,10 @@
 using namespace std;
 
 const int N = 9;
+const double SELECTION_RATE = 0.1;
+const double CROSSOVER_RATE = 0.5;
+const double MUTATION_RATE = 0.3;
+
 double fitness(vector<vector<int> >&);
 bool mutate(vector<vector<int> >&, double);
 vector<vector<int> > crossover(vector<vector<int> >&, vector<vector<int> >&);
@@ -21,7 +25,7 @@ vector<vector<int> > randomFill(vector<vector<int> >&);
 void printSudoku(vector<vector<int> > &);
 
 int main(int argc, char **agrv) {
-  srand(time(NULL));
+  srand(time(0));
 
   // a valid sudoku
   // vector<vector<int> > sudoku({{7,3,5,6,1,4,8,9,2},{8,4,2,9,7,3,5,6,1},{9,6,1,2,8,5,3,7,4},{2,8,6,3,4,9,1,5,7},{4,1,3,8,5,7,9,2,6},{5,7,9,1,2,6,4,3,8},{1,5,7,4,9,2,6,8,3},{6,9,4,7,3,8,2,1,5},{3,2,8,5,6,1,7,4,9}});
@@ -35,18 +39,51 @@ int main(int argc, char **agrv) {
   //   sudoku.push_back(tmp);
   // }
 
-  int init_population_size = 10;
+  int init_population_size = 50;
   vector<vector<vector<int> > > population;
   for (int i = 0; i < init_population_size; i++) {
-    // population.push_back(randomFill(sudoku));
-    vector<vector<int> > tmp = randomFill(sudoku);
-    printSudoku(tmp);
+    population.push_back(randomFill(sudoku));
+    // vector<vector<int> > tmp = randomFill(sudoku);
+    // printSudoku(tmp);
   }
 
+  int generation = 1;
+  while (true) {
+    sort(population.begin(), population.end(), [](vector<vector<int> > &cand1, vector<vector<int> > &cand2) {
+      return fitness(cand1) > fitness(cand2);
+    });
+    printf("Generation: %d\nFittest: %f, %f, %f, %f, %f\n", generation, fitness(population[0]),fitness(population[1]),fitness(population[2]),fitness(population[3]),fitness(population[4]));
+
+    if (fitness(population[0]) == 1.0) {
+      printf("Sudoku solved at generation %d: \n", generation);
+      printSudoku(population[0]);
+      break;
+    }
+    vector<vector<vector<int> > > next_population;
+
+    int selection = (int)(population.size() * SELECTION_RATE);
+    for (int i = 0; i <= selection; i++) {
+      next_population.push_back(population[i]);
+    }
+
+    int cross = (int)(next_population.size() * CROSSOVER_RATE);
+    int bound = next_population.size();
+    for (int i = 0; i <= cross; i++) {
+      int i1 = rand() % bound, i2 = rand() % bound;
+      next_population.push_back(crossover(next_population[i1], next_population[i2]));
+    }
+    for (int i = 0; i < next_population.size(); i++) {
+      mutate(next_population[i], MUTATION_RATE);
+    }
+
+    // population = vector<vector<vector<int> > >(next_population.begin(), next_population.end());
+    population = next_population;
+    generation++;
+  }
 
   // cout << mutate(sudoku, 0.85) << endl;
   // cout << "fitness: " << fitness(sudoku) << endl;
-  
+  cout << "end" << endl;
   
 }
 
@@ -96,7 +133,7 @@ double fitness(vector<vector<int> > &sudoku) {
 bool mutate(vector<vector<int> > &sudoku, double mutation_rate) {
   double random = rand() / (double)RAND_MAX;
   if (random < mutation_rate) {
-    while (true) {
+    for (int i = 0; i < 1000; i++) {
       int row = rand() % N;
       int col1 = rand() % N;
       int col2 = rand() % N;
