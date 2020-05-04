@@ -18,9 +18,9 @@
 using namespace std;
 
 const int N = 9;
-const int INIT_POP_SIZE = 500;
+const int INIT_POP_SIZE = 1000;
 const double SELECTION_RATE = 0.15;
-const double MUTATION_RATE = 0.1;
+const double MUTATION_RATE = 0.8;
 
 double fitness(vector<vector<int> >&);
 bool mutate(vector<vector<int> >&, double, vector<vector<int> >&);
@@ -39,7 +39,8 @@ int main(int argc, char **agrv) {
   // vector<vector<int> > sudoku({{7,3,5,6,1,4,8,9,2},{8,4,2,9,7,3,5,6,1},{9,6,1,2,8,5,3,7,4},{2,8,6,3,4,9,1,5,7},{4,1,3,8,5,7,9,2,6},{5,7,9,1,2,6,4,3,8},{1,5,7,4,9,2,6,8,3},{6,9,4,7,3,8,2,1,5},{3,2,8,5,6,1,7,4,9}});
   
   // test case
-  vector<vector<int> > sudoku({{7,3,5,6,0,4,0,0,2},{8,4,2,9,7,3,5,6,0},{9,0,1,2,8,5,3,7,0},{2,8,0,3,4,9,1,0,7},{4,1,0,8,5,7,0,2,6},{5,7,0,1,2,6,0,3,8},{1,5,7,4,9,2,6,8,0},{6,9,4,7,3,0,2,1,5},{3,2,8,0,6,1,0,4,9}});
+  // vector<vector<int> > sudoku({{7,3,5,6,0,4,0,0,2},{8,4,2,9,7,3,5,6,0},{9,0,1,2,8,5,3,7,0},{2,8,0,3,4,9,1,0,7},{4,1,0,8,5,7,0,2,6},{5,7,0,1,2,6,0,3,8},{1,5,7,4,9,2,6,8,0},{6,9,4,7,3,0,2,1,5},{3,2,8,0,6,1,0,4,9}});
+  vector<vector<int> > sudoku({{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0}});
   printSudoku(sudoku);
 
   // record empty positions to be filled, it will help mutate() since we cannot swap already-filled positions
@@ -66,11 +67,12 @@ int main(int argc, char **agrv) {
     sort(population.begin(), population.end(), [](vector<vector<int> > &cand1, vector<vector<int> > &cand2) {
       return fitness(cand1) > fitness(cand2);
     });
-      // printf("Generation: %d\nFitness: ", generation);
-      // for (int i = 0; i < min((int)population.size(), 3); i++) {
-      //     printf("%f, ", fitness(population[i]));
-      // }
-      // printf("\n");
+      printf("Generation: %d\nFitness top 5: ", generation);
+      for (int i = 0; i < min((int)population.size(), 5); i++) {
+        printf("%f, ", fitness(population[i]));
+      }
+      printf("\n");
+      printSudoku(population[0]);
 
     if (fitness(population[0]) == 1.0) {
       printf("Sudoku solved at generation %d: \n", generation);
@@ -144,7 +146,7 @@ double fitness(vector<vector<int> > &sudoku) {
 bool mutate(vector<vector<int> > &sudoku, double mutation_rate, vector<vector<int> > &spots) {
   double random = rand() / (double)RAND_MAX;
   if (random < mutation_rate) {
-    while (true) {
+    for (int i = 0; i < 5000; i++) {
       int row = rand() % N;
       if (spots[row].size() <= 1) {
           return false;
@@ -161,7 +163,7 @@ bool mutate(vector<vector<int> > &sudoku, double mutation_rate, vector<vector<in
       // } else {
       //   swap(sudoku, row, col1, row, col2);
       // }
-      if (nextColUnused(sudoku, col1) != -1 && nextColUnused(sudoku, col2) != -1) {
+      if (nextColUnused(sudoku, col1) != -1 && nextColUnused(sudoku, col2) != -1 || nextBlockUnused(sudoku, row / 3 * 3, col1 / 3 * 3) != -1 && nextBlockUnused(sudoku, row / 3 * 3, col2 / 3 * 3) != -1) {
         return true;
       } else {
         swap(sudoku, row, col1, row, col2);
@@ -296,7 +298,7 @@ vector<vector<int> > randomFill(vector<vector<int> > &sudoku) {
 }
 
 void printSudoku(vector<vector<int> > &sudoku) {
-  printf("[");
+  printf("[\n");
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       if (sudoku[i][j] == 0) {
