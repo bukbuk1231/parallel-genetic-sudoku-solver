@@ -76,7 +76,6 @@ int main(int argc, char **agrv) {
       mutate(next_population[i], MUTATION_RATE);
     }
 
-    // population = vector<vector<vector<int> > >(next_population.begin(), next_population.end());
     population = next_population;
     generation++;
   }
