@@ -55,6 +55,7 @@ int main(int argc, char **agrv) {
     spots.push_back(row);
   }
 
+  // randomly fill the population
   vector<vector<vector<int> > > population;
   for (int i = 0; i < INIT_POP_SIZE; i++) {
     population.push_back(randomFill(sudoku));
@@ -62,10 +63,12 @@ int main(int argc, char **agrv) {
 
   int generation = 1;
   while (!population.empty()) {
+    // sort the population based on fitness
     sort(population.begin(), population.end(), [](vector<vector<int> > &cand1, vector<vector<int> > &cand2) {
       return fitness(cand1) > fitness(cand2);
     });
 
+    // print the progress
     printf("Generation: %d\nFitness top 5: ", generation);
     for (int i = 0; i < min((int)population.size(), 5); i++) {
       printf("%f, ", fitness(population[i]));
@@ -73,6 +76,7 @@ int main(int argc, char **agrv) {
     printf("\n");
     printSudoku(population[0]);
 
+    // check for answer
     if (fitness(population[0]) == 1.0) {
       printf("Sudoku solved at generation %d: \n", generation);
       printSudoku(population[0]);
@@ -80,16 +84,20 @@ int main(int argc, char **agrv) {
     }
     vector<vector<vector<int> > > next_population;
 
+    // Selection
     int selection = (int)(population.size() * SELECTION_RATE);
     for (int i = 0; i <= selection; i++) {
       next_population.push_back(population[i]);
     }
-
+    
+    // Crossover
     int bound = next_population.size();
     for (int i = next_population.size(); i < INIT_POP_SIZE; i++) {
       int i1 = rand() % bound, i2 = rand() % bound;
       next_population.push_back(crossover(next_population[i1], next_population[i2]));
     }
+
+    // Mutation
     for (int i = 0; i < next_population.size(); i++) {
       mutate(next_population[i], MUTATION_RATE, spots);
     }
